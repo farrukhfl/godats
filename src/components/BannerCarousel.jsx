@@ -17,7 +17,7 @@ export default function BannerCarousel({ slides, interval = 4500 }) {
       onMouseLeave={() => setPaused(false)}
       className="relative mx-auto mt-16 max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
     >
-      <div className="relative aspect-[16/7] w-full sm:aspect-[16/6]">
+      <div className="relative aspect-[16/5] w-full">
         <AnimatePresence mode="wait">
           <motion.img
             key={index}
@@ -27,7 +27,7 @@ export default function BannerCarousel({ slides, interval = 4500 }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain"
           />
         </AnimatePresence>
       </div>

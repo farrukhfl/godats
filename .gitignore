@@ -18,6 +18,9 @@ dist-ssr
 # Raw designer export — unused duplicate of assets already curated under public/images
 public/godats images
 
+# Internal build-prompt files, not part of the app
+godats-*-prompt.md
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -4,13 +4,14 @@ import { Link } from 'react-router-dom'
 import {
   Globe, Smartphone, BrainCircuit, ArrowRight, Palette,
   TrendingUp, Headphones, LayoutGrid, Store, RefreshCw,
-  ShoppingCart, Layers, Star, Cloud, PenTool, Sparkles, Rocket,
+  ShoppingCart, Layers, Star, Cloud, PenTool, Sparkles, Rocket, Quote,
 } from 'lucide-react'
 import Reveal, { StaggerGroup, StaggerItem } from '../components/Reveal'
 import CardSlider from '../components/CardSlider'
 import FAQAccordion from '../components/FAQAccordion'
 import BannerCarousel from '../components/BannerCarousel'
 import StatCounter from '../components/StatCounter'
+import Avatar from '../components/Avatar'
 import { BuildWebsiteIcon, BoostGrowthIcon } from '../components/PitchIcons'
 import { useParallax } from '../lib/useParallax'
 
@@ -397,24 +398,33 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="bg-slate-50 py-20">
-        <div className="mx-auto max-w-7xl px-6">
+      <section className="relative overflow-hidden bg-slate-50 py-20">
+        <div className="pointer-events-none absolute inset-0 bg-grid opacity-30" />
+        <div className="relative mx-auto max-w-7xl px-6">
           <Reveal className="mx-auto max-w-2xl text-center">
+            <span className="mb-3 inline-block rounded-full bg-brand-400/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-500">
+              Testimonials
+            </span>
             <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Loved by businesses like yours</h2>
           </Reveal>
           <StaggerGroup className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {testimonials.map((t) => (
+            {testimonials.map((t, i) => (
               <StaggerItem key={t.name}>
-                <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 group transition duration-300 hover:-translate-y-1 hover:border-brand-400/30 hover:shadow-lg hover:shadow-brand-500/5">
-                  <div className="mb-4 flex gap-0.5 text-brand-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} size={15} fill={i < Math.round(t.rating) ? 'currentColor' : 'none'} />
-                    ))}
-                  </div>
-                  <p className="flex-1 text-sm leading-relaxed text-slate-600">"{t.quote}"</p>
-                  <div className="mt-5 border-t border-slate-200 pt-4">
-                    <div className="text-sm font-semibold text-slate-900">{t.name}</div>
-                    <div className="text-xs text-slate-400">{t.role}</div>
+                <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 group transition duration-300 hover:-translate-y-1 hover:border-brand-400/30 hover:shadow-xl hover:shadow-brand-500/10">
+                  <span className="pointer-events-none absolute -right-3 -top-3 h-20 w-20 rounded-full bg-brand-400/10 blur-2xl transition duration-300 group-hover:bg-brand-400/20" />
+                  <Quote size={34} className="mb-3 shrink-0 fill-brand-100 text-brand-100" strokeWidth={0} />
+                  <p className="relative flex-1 text-sm leading-relaxed text-slate-600">"{t.quote}"</p>
+                  <div className="mt-6 flex items-center gap-3 border-t border-slate-200 pt-5">
+                    <Avatar name={t.name} index={i} size={44} />
+                    <div className="flex-1">
+                      <div className="text-sm font-semibold text-slate-900">{t.name}</div>
+                      <div className="text-xs text-slate-400">{t.role}</div>
+                    </div>
+                    <div className="flex shrink-0 gap-0.5 text-brand-400">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={13} fill={i < Math.round(t.rating) ? 'currentColor' : 'none'} />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </StaggerItem>

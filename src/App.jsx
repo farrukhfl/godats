@@ -4,6 +4,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import ScrollProgress from './components/ScrollProgress'
+import SplashScreen from './components/SplashScreen'
 
 import Home from './pages/Home'
 import About from './pages/About'
@@ -45,6 +46,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SplashScreen />
       <ScrollToTop />
       <ScrollProgress />
       <Header />

@@ -61,3 +61,14 @@ h1, h2, h3, h4, h5, h6 {
 .animate-float-slower {
   animation: float-slower 18s ease-in-out infinite;
 }
+
+@keyframes marquee-track {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  animation: marquee-track var(--marquee-duration, 24s) linear infinite;
+}
+.marquee-row:hover .marquee-track {
+  animation-play-state: paused;
+}

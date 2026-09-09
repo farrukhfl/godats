@@ -1,15 +1,32 @@
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
   Globe, Smartphone, BrainCircuit, ArrowRight, Palette,
   TrendingUp, Headphones, LayoutGrid, Store, RefreshCw,
-  ShoppingCart, Layers, Star, Cloud, PenTool,
+  ShoppingCart, Layers, Star, Cloud, PenTool, Sparkles, Rocket,
 } from 'lucide-react'
 import Reveal, { StaggerGroup, StaggerItem } from '../components/Reveal'
 import CardSlider from '../components/CardSlider'
 import FAQAccordion from '../components/FAQAccordion'
 import BannerCarousel from '../components/BannerCarousel'
+import StatCounter from '../components/StatCounter'
+import { BuildWebsiteIcon, BoostGrowthIcon } from '../components/PitchIcons'
 import { useParallax } from '../lib/useParallax'
+
+const rotatingWords = ['great tech', 'great growth', 'great support', 'great results']
+
+const marqueeItems = [
+  'Web Design', 'App Development', 'AI Consulting', 'ERP Consulting',
+  'Cloud Hosting', 'Domain Registration', 'Branding', 'Fintech Development',
+]
+
+const heroStats = [
+  { value: '15+', label: 'Years of Experience' },
+  { value: '99.99%', label: 'Uptime Guarantee' },
+  { value: '24/7', label: 'Dedicated Support' },
+  { value: '10+', label: 'Core Services' },
+]
 
 const bannerSlides = [
   { src: '/images/home/banner-talent.png', alt: 'Great talent, merging with great tech' },
@@ -65,6 +82,13 @@ const faqs = [
 export default function Home() {
   const blobA = useParallax(24)
   const blobB = useParallax(-32)
+  const blobC = useParallax(16)
+  const [wordIndex, setWordIndex] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => setWordIndex((i) => (i + 1) % rotatingWords.length), 2600)
+    return () => clearInterval(timer)
+  }, [])
 
   return (
     <div>
@@ -73,10 +97,12 @@ export default function Home() {
         onMouseMove={(e) => {
           blobA.onMouseMove(e)
           blobB.onMouseMove(e)
+          blobC.onMouseMove(e)
         }}
         className="relative overflow-hidden bg-white pb-20 pt-40 sm:pt-48"
       >
         <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(12,121,247,0.08),transparent)]" />
         <motion.div
           style={{ x: blobA.x, y: blobA.y }}
           className="pointer-events-none absolute -left-40 top-0 h-96 w-96 rounded-full bg-brand-600/25 blur-3xl animate-float-slow"
@@ -85,23 +111,64 @@ export default function Home() {
           style={{ x: blobB.x, y: blobB.y }}
           className="pointer-events-none absolute -right-32 top-32 h-[26rem] w-[26rem] rounded-full bg-brand-400/15 blur-3xl animate-float-slower"
         />
+        <motion.div
+          style={{ x: blobC.x, y: blobC.y }}
+          className="pointer-events-none absolute left-1/3 top-64 hidden h-72 w-72 rounded-full bg-fuchsia-400/10 blur-3xl animate-float-slow sm:block"
+        />
+
+        {/* Floating trust badges */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
+          style={{ x: blobA.x, y: blobA.y }}
+          className="pointer-events-none absolute left-[6%] top-36 hidden items-center gap-2 rounded-2xl border border-white/60 bg-white/70 px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-lg shadow-brand-500/10 backdrop-blur-md lg:flex"
+        >
+          <Rocket size={15} className="text-brand-500" /> Launch in days, not months
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.75 }}
+          style={{ x: blobB.x, y: blobB.y }}
+          className="pointer-events-none absolute right-[7%] top-56 hidden items-center gap-2 rounded-2xl border border-white/60 bg-white/70 px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-lg shadow-brand-500/10 backdrop-blur-md lg:flex"
+        >
+          <Star size={15} className="fill-current text-brand-500" /> Rated 4.9/5 by clients
+        </motion.div>
 
         <div className="relative mx-auto max-w-5xl px-6 text-center">
           <motion.span
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mb-6 inline-block rounded-full border border-brand-400/30 bg-brand-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-brand-500"
+            className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-brand-400/30 bg-brand-400/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-brand-500"
           >
-            The GoDats Group · Since 2009
+            <Sparkles size={12} /> The GoDats Group · Since 2009
           </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="font-display text-5xl font-bold tracking-tight text-slate-900 sm:text-7xl"
+            className="font-display text-5xl font-bold tracking-tight text-slate-900 sm:text-6xl"
           >
-            Great talent,<br className="hidden sm:block" /> merging with <span className="text-gradient">great tech</span>
+            Great talent,<br className="hidden sm:block" />{' '}
+            <span className="sm:whitespace-nowrap">
+              merging with{' '}
+              <span className="relative inline-grid text-gradient">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={rotatingWords[wordIndex]}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -16 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="col-start-1 row-start-1"
+                  >
+                    {rotatingWords[wordIndex]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+            </span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 24 }}
@@ -117,17 +184,43 @@ export default function Home() {
             transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
             className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
-            <Link to="/contact" className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95">
+            <Link to="/contact" className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95">
+              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
               Get Started <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
             <Link to="/about" className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-7 py-3.5 text-sm font-semibold text-slate-900 transition hover:border-brand-400/40 hover:text-brand-500">
               Our Story
             </Link>
           </motion.div>
+
+          {/* Trust stat bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.55 }}
+            className="mx-auto mt-14 grid max-w-2xl grid-cols-2 gap-y-8 rounded-3xl border border-slate-200/70 bg-white/60 px-6 py-7 backdrop-blur-sm sm:grid-cols-4 sm:gap-0 sm:divide-x sm:divide-slate-200"
+          >
+            {heroStats.map((s) => (
+              <StatCounter key={s.label} value={s.value} label={s.label} />
+            ))}
+          </motion.div>
         </div>
 
+        {/* Marquee strip */}
+        <Reveal delay={0.05} className="marquee-row relative mt-14 overflow-hidden border-y border-slate-200/70 bg-slate-50 py-4">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-slate-50 to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-slate-50 to-transparent" />
+          <div className="marquee-track flex w-max" style={{ '--marquee-duration': '28s' }}>
+            {[...marqueeItems, ...marqueeItems].map((item, i) => (
+              <span key={`${item}-${i}`} className="mx-5 flex shrink-0 items-center gap-2 text-sm font-semibold text-slate-400">
+                {item} <span className="text-brand-400">✦</span>
+              </span>
+            ))}
+          </div>
+        </Reveal>
+
         {/* Quick service tiles */}
-        <StaggerGroup className="relative mx-auto mt-20 grid max-w-5xl grid-cols-2 gap-4 px-6 sm:grid-cols-5">
+        <StaggerGroup className="relative mx-auto mt-14 grid max-w-5xl grid-cols-2 gap-4 px-6 sm:grid-cols-5">
           {quickTiles.map((tile) => (
             <StaggerItem key={tile.label}>
               <Link
@@ -225,13 +318,13 @@ export default function Home() {
         <StaggerGroup className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {[
             { icon: Palette, title: 'Brand your idea', description: 'Team up with our designers to give your idea a logo design that stands out. Custom designs every time! Smart, stylish, and built to last.' },
-            { iconImg: '/images/home/icon-build-website.svg', title: 'Build your website', description: 'Create websites that drive results. We do all the heavy lifting. SEO-rich sites, responsive designs, with ecommerce features.' },
-            { iconImg: '/images/home/icon-boost-growth.svg', title: 'Boost your growth', description: 'Speed-dial your growth with personalized digital solutions. Organic, paid, and AI — meet your customers wherever they make decisions.' },
+            { icon: BuildWebsiteIcon, title: 'Build your website', description: 'Create websites that drive results. We do all the heavy lifting. SEO-rich sites, responsive designs, with ecommerce features.' },
+            { icon: BoostGrowthIcon, title: 'Boost your growth', description: 'Speed-dial your growth with personalized digital solutions. Organic, paid, and AI — meet your customers wherever they make decisions.' },
           ].map((pitch) => (
             <StaggerItem key={pitch.title}>
               <div className="group flex h-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-brand-400/30 hover:shadow-lg hover:shadow-brand-500/5">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400/20 to-brand-600/20 text-brand-500 transition duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:from-brand-400 group-hover:to-brand-600 group-hover:text-white">
-                  {pitch.iconImg ? <img src={pitch.iconImg} alt="" className="h-5 w-5" /> : <pitch.icon size={20} />}
+                  <pitch.icon size={20} />
                 </span>
                 <div>
                   <h3 className="font-display font-semibold text-slate-900">{pitch.title}</h3>

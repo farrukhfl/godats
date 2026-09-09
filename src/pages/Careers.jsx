@@ -7,7 +7,6 @@ import {
 import PageHero from '../components/PageHero'
 import Reveal, { StaggerGroup, StaggerItem } from '../components/Reveal'
 import LeadForm from '../components/LeadForm'
-import { jobs } from '../lib/jobs'
 
 const whatWeDo = [
   { icon: MonitorSmartphone, label: 'Custom-built applications and business systems' },
@@ -40,19 +39,12 @@ const perks = [
   { icon: Home, label: 'Remote Flexibility' },
 ]
 
-const interestAreas = [...new Set(jobs.map((j) => j.category))].concat('Other')
-
-// NOTE: the live site's "Get Hired" section only showed a bare Submit button —
-// the input fields above it weren't captured in the scrape. This is a
-// best-guess reconstruction (name/email/phone/interest/resume), and it's kept
-// as a mock (console-log) submission since it collects a resume file, which
-// the JSON contact-inquiry API can't accept — needs a real multipart backend.
 const getHiredFields = [
   { name: 'name', label: 'Name', required: true },
   { name: 'email', label: 'Email', type: 'email', required: true },
   { name: 'phone', label: 'Phone', type: 'tel', required: true },
-  { name: 'interest', label: 'Area of interest', type: 'select', options: interestAreas, required: true },
-  { name: 'resume', label: 'Upload CV / Resume', type: 'file', accept: '.pdf,.doc,.docx', required: true, full: true },
+  { name: 'streetAddress', label: 'Street Address', required: false, full: true },
+  { name: 'coverLetter', label: 'Cover Letter', type: 'textarea', required: false, full: true },
 ]
 
 export default function Careers() {
@@ -64,6 +56,15 @@ export default function Careers() {
         subtitle="On-site, hybrid, and remote opportunities available"
         ctaLabel="Search Jobs"
         ctaTo="/job-openings"
+      />
+
+      <LeadForm
+        source="careers-general"
+        endpoint="/api/careers"
+        title="Get Hired"
+        subtitle="Don't see a role that fits? Send us a general application and we'll keep you in mind."
+        submitLabel="Submit Application"
+        fields={getHiredFields}
       />
 
       {/* What we do */}
@@ -169,15 +170,6 @@ export default function Careers() {
           </Link>
         </Reveal>
       </section>
-
-      <LeadForm
-        source="careers-general"
-        mockSubmit
-        title="Get Hired"
-        subtitle="Don't see a role that fits? Send us a general application and we'll keep you in mind."
-        submitLabel="Submit Application"
-        fields={getHiredFields}
-      />
     </div>
   )
 }

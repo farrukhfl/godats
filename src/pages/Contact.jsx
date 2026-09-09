@@ -7,7 +7,7 @@ import {
 import PageHero from '../components/PageHero'
 import Reveal, { StaggerGroup, StaggerItem } from '../components/Reveal'
 import { ADDRESS, PHONE, PHONE_TEL, EMAIL_INFO, EMAIL_SALES } from '../lib/nav'
-import { postForm } from '../lib/api'
+import { postJson } from '../lib/api'
 import { sanitizeInput, isValidEmail, checkRateLimit } from '../lib/security'
 
 const talkPoints = [
@@ -34,6 +34,7 @@ const initialValues = { name: '', phone: '', email: '', company: '', message: ''
 function validate(values) {
   const errors = {}
   if (!sanitizeInput(values.name)) errors.name = 'Please enter your name.'
+  if (!sanitizeInput(values.phone)) errors.phone = 'Please enter your contact number.'
   if (!values.email.trim()) errors.email = 'Please enter your email address.'
   else if (!isValidEmail(values.email)) errors.email = 'Please enter a valid email address.'
   if (!sanitizeInput(values.message)) errors.message = 'Tell us a little about what you need.'
@@ -83,19 +84,24 @@ function ContactForm() {
     setStatus('loading')
     setSubmitError('')
 
+    const payload = {
+      name: sanitizeInput(values.name),
+      contactNumber: sanitizeInput(values.phone),
+      email: values.email.trim(),
+      message: sanitizeInput(values.message),
+    }
+    if (values.company.trim()) payload.companyName = sanitizeInput(values.company)
+
     try {
-      await postForm('/contact-inquiry', {
-        source: 'contact',
-        name: sanitizeInput(values.name),
-        phone: sanitizeInput(values.phone) || undefined,
-        email: values.email.trim(),
-        businessName: sanitizeInput(values.company) || 'Not provided',
-        service: 'General Inquiry',
-        message: sanitizeInput(values.message),
-      })
+      await postJson('/api/contact', payload)
       setStatus('success')
     } catch (error) {
-      setErrors(error.fieldErrors || {})
+      const fieldErrors = {}
+      for (const detail of error.details || []) {
+        const key = detail.path?.[detail.path.length - 1]
+        if (key) fieldErrors[key === 'contactNumber' ? 'phone' : key === 'companyName' ? 'company' : key] = detail.message
+      }
+      setErrors(fieldErrors)
       setSubmitError(error.message || 'Unable to submit your request. Please try again.')
       setStatus('idle')
     }
@@ -149,6 +155,7 @@ function ContactForm() {
       <div>
         <label htmlFor="phone" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Contact Number</label>
         <input id="phone" type="tel" value={values.phone} onChange={(e) => update('phone', e.target.value)} className={fieldClass('phone')} />
+        {errors.phone && <p className="mt-1 text-xs font-medium text-rose-600">{errors.phone}</p>}
       </div>
       <div>
         <label htmlFor="email" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Email Address</label>
@@ -168,7 +175,7 @@ function ContactForm() {
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 disabled:opacity-70"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {status === 'loading' && <Loader2 size={16} className="animate-spin" />}
           {status === 'loading' ? 'Sending…' : 'Send Message'}

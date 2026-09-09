@@ -1,0 +1,16 @@
+# Security headers for static hosts that read this file (Netlify, Cloudflare
+# Pages). If you deploy elsewhere (Nginx, Vercel, etc.), configure the same
+# headers at that layer instead — this file only takes effect on the hosts
+# above.
+#
+# connect-src below uses a broad `https:` because this static file can't be
+# templated with the real API origin at build time the way index.html's CSP
+# meta tag is (see VITE_API_BASE_URL there). Once the production API domain
+# is fixed, tighten `connect-src` to `'self' https://your-api-domain` here.
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; frame-src https://www.google.com; connect-src 'self' https:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'

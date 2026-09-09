@@ -2,20 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle2, Loader2, Upload, Check } from 'lucide-react'
 import Reveal from './Reveal'
-import { postForm } from '../lib/api'
+import { postJson, postMultipart } from '../lib/api'
 import { sanitizeInput, isValidEmail, checkRateLimit } from '../lib/security'
-
-// The API's contact-inquiry endpoint has a fixed contract (name, email,
-// businessName, service, message, +optional phone/country/companySize/industry)
-// regardless of which page's form fields collected the data — map each
-// source page onto a human-readable "service" label for the backend.
-const SERVICE_LABELS = {
-  'erp-consulting': 'ERP Consulting',
-  'ai-consulting': 'AI Consulting',
-  'careers': 'Careers Application',
-  'partner-program': 'Partner Program',
-  'general': 'General Inquiry',
-}
 
 function buildInitialValues(fields, prefill) {
   const initial = { website_url_hp: '' }
@@ -31,6 +19,10 @@ function validate(fields, values) {
       if (field.required && !raw) errors[field.name] = `Please check "${field.label}" to continue.`
       continue
     }
+    if (field.type === 'file') {
+      if (field.required && !raw) errors[field.name] = `${field.label} is required.`
+      continue
+    }
     const clean = field.type === 'email' ? (raw || '').trim() : sanitizeInput(raw || '')
     if (field.required && !clean) {
       errors[field.name] = `${field.label} is required.`
@@ -44,16 +36,58 @@ function validate(fields, values) {
 }
 
 /**
+ * Builds the request body for a field schema + values map, choosing
+ * multipart/form-data automatically when a file field is present (required
+ * by endpoints like /api/jobs/:jobId/apply) and JSON otherwise.
+ */
+function buildBody(fields, values) {
+  const hasFile = fields.some((f) => f.type === 'file')
+
+  if (hasFile) {
+    const formData = new FormData()
+    for (const field of fields) {
+      const raw = values[field.name]
+      if (field.type === 'file') {
+        if (raw instanceof File) formData.append(field.name, raw)
+      } else if (field.type === 'checkbox') {
+        formData.append(field.name, raw ? 'true' : 'false')
+      } else if (Array.isArray(raw)) {
+        raw.forEach((item) => formData.append(field.name, item))
+      } else {
+        const clean = field.type === 'email' ? (raw || '').trim() : sanitizeInput(raw || '')
+        if (clean) formData.append(field.name, clean)
+      }
+    }
+    return formData
+  }
+
+  const payload = {}
+  for (const field of fields) {
+    const raw = values[field.name]
+    if (field.type === 'checkbox') {
+      payload[field.name] = Boolean(raw)
+    } else if (Array.isArray(raw)) {
+      payload[field.name] = raw
+    } else {
+      const clean = field.type === 'email' ? (raw || '').trim() : sanitizeInput(raw || '')
+      if (clean) payload[field.name] = clean
+    }
+  }
+  return payload
+}
+
+/**
  * Generic lead-capture form. Renders text/email/tel/textarea/select/checkbox/file
- * fields from a schema and submits to the shared contact-inquiry API.
+ * fields from a schema and submits to a specific Godats API endpoint.
  *
- * Set `mockSubmit` for forms the backend can't accept yet (e.g. anything with a
- * file upload — the contact-inquiry endpoint is JSON-only, not multipart). Mock
- * submissions just log the payload to the console, matching the website-brief
- * wizard, instead of silently dropping the file against the wrong endpoint.
+ * Field `name`s must match the target endpoint's expected payload keys exactly
+ * (see api-docs.txt) — the form submits `values` as-is, with no relabeling.
+ *
+ * Set `mockSubmit` only for forms with no matching backend endpoint yet —
+ * submissions just log to the console instead of silently failing.
  */
 export default function LeadForm({
-  title, subtitle, fields, submitLabel = 'Submit', closing, source = 'general', mockSubmit = false, prefill, id,
+  title, subtitle, fields, submitLabel = 'Submit', closing, source = 'general', endpoint, mockSubmit = false, prefill, id,
 }) {
   const [values, setValues] = useState(() => buildInitialValues(fields, prefill))
   const [errors, setErrors] = useState({})
@@ -104,41 +138,25 @@ export default function LeadForm({
     setSubmitError('')
 
     if (mockSubmit) {
-      // TODO(backend): this form collects a file upload (or other data the
-      // JSON contact-inquiry endpoint can't take) — wire up a real multipart
-      // submission once that API exists. For now we just log the payload.
       const payload = { source, ...values }
       delete payload.website_url_hp
-      console.log('Form submission (mock, no backend yet):', payload)
+      console.log('Form submission (mock, no backend endpoint yet):', payload)
       setTimeout(() => setStatus('success'), 600)
       return
     }
 
-    const messageField = fields.find((f) => f.type === 'textarea')
-    const companyField = fields.find((f) => f.name === 'company')
-    const phoneField = fields.find((f) => f.type === 'tel')
-    const selectField = fields.find((f) => f.type === 'select')
-
-    let message = messageField ? sanitizeInput(values[messageField.name]) : ''
-    if (selectField && values[selectField.name]) {
-      message = `${selectField.label}: ${values[selectField.name]}\n\n${message}`.trim()
-    }
-
-    const payload = {
-      source,
-      name: sanitizeInput(values.name || ''),
-      email: (values.email || '').trim(),
-      businessName: companyField ? sanitizeInput(values[companyField.name]) : 'Not provided',
-      service: SERVICE_LABELS[source] || 'General Inquiry',
-      message,
-    }
-    if (phoneField && values[phoneField.name]) payload.phone = sanitizeInput(values[phoneField.name])
-
     try {
-      await postForm('/contact-inquiry', payload)
+      const body = buildBody(fields, values)
+      if (body instanceof FormData) await postMultipart(endpoint, body)
+      else await postJson(endpoint, body)
       setStatus('success')
     } catch (error) {
-      setErrors(error.fieldErrors || {})
+      const fieldErrors = {}
+      for (const detail of error.details || []) {
+        const key = detail.path?.[detail.path.length - 1]
+        if (key) fieldErrors[key] = detail.message
+      }
+      setErrors(fieldErrors)
       setSubmitError(error.message || 'Unable to submit your request. Please try again.')
       setStatus('idle')
     }
@@ -200,7 +218,7 @@ export default function LeadForm({
                         type="button"
                         id={fieldId}
                         onClick={() => update(field.name, !values[field.name])}
-                        className={`flex w-full items-start gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition ${
+                        className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition ${
                           hasError ? 'border-rose-400 bg-rose-50' : 'border-slate-200 bg-white hover:border-brand-400/40'
                         }`}
                       >
@@ -232,13 +250,13 @@ export default function LeadForm({
                         }`}
                       >
                         <Upload size={16} />
-                        {values[field.name] || `Click to choose a file${field.accept ? ` (${field.accept})` : ''}`}
+                        {values[field.name]?.name || `Click to choose a file${field.accept ? ` (${field.accept})` : ''}`}
                         <input
                           id={fieldId}
                           type="file"
                           accept={field.accept}
                           className="hidden"
-                          onChange={(e) => update(field.name, e.target.files?.[0]?.name || '')}
+                          onChange={(e) => update(field.name, e.target.files?.[0] || null)}
                         />
                       </label>
                       {hasError && <p className="mt-1 text-xs font-medium text-rose-600">{errors[field.name]}</p>}
@@ -293,7 +311,7 @@ export default function LeadForm({
                 <button
                   type="submit"
                   disabled={status === 'loading'}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95 disabled:opacity-70"
+                  className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {status === 'loading' && <Loader2 size={16} className="animate-spin" />}
                   {status === 'loading' ? 'Sending…' : submitLabel}

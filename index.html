@@ -6,6 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GoDats | Dolphin Advanced Technology Services</title>
     <meta name="description" content="Everything you need to get your business on the web. Domain names, cloud hosting, app development, AI and ERP consultation, and more. It all starts here." />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!--
+      Baseline CSP. connect-src is templated from VITE_API_BASE_URL at build
+      time so it always matches the backend this build actually talks to.
+      Directives that browsers ignore in a <meta> tag (frame-ancestors,
+      X-Frame-Options, etc.) are set instead via the hosting-layer headers in
+      public/_headers / vercel.json — set those up on whichever platform this
+      is deployed to.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; frame-src https://www.google.com; connect-src 'self' %VITE_API_BASE_URL%; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
   </head>
   <body>
     <div id="root"></div>

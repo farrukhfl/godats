@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ArrowLeft, CheckCircle2, Rocket, Info } from 'lucide-react'
+import { ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Loader2, Rocket, Info } from 'lucide-react'
 import {
   WizardProgress, TextField, TextAreaField, SelectField, RadioCards, CheckboxGrid,
   FileChoice, SwatchPicker, FontPicker, CheckboxLine,
 } from '../components/wizard/WizardFields'
+import { postJson, postMultipart } from '../lib/api'
+import { sanitizeInput, checkRateLimit } from '../lib/security'
 
 const TOTAL_STEPS = 5
 
@@ -27,15 +29,15 @@ const featuresList = [
   'Contact Form', 'Newsletter Signup', 'Appointment Booking', 'Blog / News', 'E-commerce / Shop',
   'Testimonials', 'Portfolio / Gallery', 'Chat Support', 'Payment Integration', 'Multi-language Support', 'Other',
 ]
-const timelines = ['ASAP (1-2 weeks)', '2-4 weeks', '1-2 months', 'No rush']
+const timelines = ['ASAP (within 1-2 weeks)', '2-4 weeks', '1-2 months', 'No rush, take your time']
 
 const initialData = {
   businessName: '', tagline: '', websiteUrl: '', industry: '', businessType: '',
-  hasLogo: '', logoFile: '', hasContent: '', contentFile: '', hasImages: '', imagesFile: '',
+  hasLogo: '', logoFile: null, hasContent: '', contentFile: null, hasImages: '', imagesFile: null,
   colorPalette: '', fontStyle: '',
   purpose: '', features: [], integrations: '',
   timeline: '', hasDomain: '', needsEmail: '', contactName: '', contactNumber: '', contactEmail: '',
-  termsAccepted: false, notes: '',
+  termsAccepted: false, notes: '', website_url_hp: '',
 }
 
 const variants = {
@@ -58,6 +60,12 @@ export default function MakeAWebsite() {
   const [direction, setDirection] = useState(1)
   const [data, setData] = useState(initialData)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const formLoadTime = useRef(null)
+  useEffect(() => {
+    formLoadTime.current = Date.now()
+  }, [])
 
   const update = (field) => (value) => setData((d) => ({ ...d, [field]: value }))
 
@@ -72,16 +80,99 @@ export default function MakeAWebsite() {
 
   function isStepValid(s) {
     if (s === 1) return Boolean(data.businessName.trim() && data.industry && data.businessType)
+    if (s === 2) return Boolean(data.hasLogo && data.hasContent && data.hasImages)
     if (s === 4) return Boolean(data.purpose)
     if (s === 5) return Boolean(data.contactNumber.trim() && data.termsAccepted)
     return true
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (!isStepValid(5)) return
-    console.log('Website questionnaire submission:', data)
-    setSubmitted(true)
+
+    // Honeypot: bots that fill this hidden field are silently "succeeded"
+    if (data.website_url_hp) {
+      setSubmitted(true)
+      return
+    }
+
+    // Automated scripts fill multi-step forms faster than any human can
+    if (formLoadTime.current && Date.now() - formLoadTime.current < 1200) {
+      setSubmitError('Please take your time filling out the form.')
+      return
+    }
+
+    const rateCheck = checkRateLimit('lead_form_submit_make-a-website', 8000)
+    if (!rateCheck.allowed) {
+      setSubmitError(`Please wait ${rateCheck.remainingSeconds} seconds before submitting again.`)
+      return
+    }
+
+    setSubmitting(true)
+    setSubmitError('')
+
+    const hasFiles = data.logoFile instanceof File || data.contentFile instanceof File || data.imagesFile instanceof File
+
+    try {
+      if (hasFiles) {
+        const formData = new FormData()
+        formData.append('businessName', sanitizeInput(data.businessName))
+        if (data.tagline.trim()) formData.append('tagline', sanitizeInput(data.tagline))
+        if (data.websiteUrl.trim()) formData.append('websiteUrl', sanitizeInput(data.websiteUrl))
+        formData.append('primaryIndustry', data.industry)
+        formData.append('businessType', data.businessType)
+        formData.append('hasLogo', data.hasLogo)
+        formData.append('hasContent', data.hasContent)
+        formData.append('hasImages', data.hasImages)
+        if (data.colorPalette) formData.append('colorPreference', data.colorPalette)
+        if (data.fontStyle) formData.append('fontStyle', data.fontStyle)
+        formData.append('primaryPurpose', data.purpose)
+        data.features.forEach((f) => formData.append('features', f))
+        if (data.integrations.trim()) formData.append('integrations', sanitizeInput(data.integrations))
+        if (data.timeline) formData.append('timeline', data.timeline)
+        if (data.hasDomain) formData.append('hasDomain', data.hasDomain)
+        if (data.needsEmail) formData.append('needsEmail', data.needsEmail)
+        if (data.contactName.trim()) formData.append('contactName', sanitizeInput(data.contactName))
+        formData.append('contactNumber', sanitizeInput(data.contactNumber))
+        if (data.contactEmail.trim()) formData.append('contactEmail', data.contactEmail.trim())
+        formData.append('termsAccepted', 'true')
+        if (data.notes.trim()) formData.append('anythingElse', sanitizeInput(data.notes))
+        if (data.logoFile instanceof File) formData.append('logo', data.logoFile)
+        if (data.contentFile instanceof File) formData.append('content', data.contentFile)
+        if (data.imagesFile instanceof File) formData.append('images', data.imagesFile)
+        await postMultipart('/api/make-a-website', formData)
+      } else {
+        const payload = {
+          businessName: sanitizeInput(data.businessName),
+          primaryIndustry: data.industry,
+          businessType: data.businessType,
+          hasLogo: data.hasLogo,
+          hasContent: data.hasContent,
+          hasImages: data.hasImages,
+          primaryPurpose: data.purpose,
+          contactNumber: sanitizeInput(data.contactNumber),
+          termsAccepted: true,
+        }
+        if (data.tagline.trim()) payload.tagline = sanitizeInput(data.tagline)
+        if (data.websiteUrl.trim()) payload.websiteUrl = sanitizeInput(data.websiteUrl)
+        if (data.colorPalette) payload.colorPreference = data.colorPalette
+        if (data.fontStyle) payload.fontStyle = data.fontStyle
+        if (data.features.length) payload.features = data.features
+        if (data.integrations.trim()) payload.integrations = sanitizeInput(data.integrations)
+        if (data.timeline) payload.timeline = data.timeline
+        if (data.hasDomain) payload.hasDomain = data.hasDomain
+        if (data.needsEmail) payload.needsEmail = data.needsEmail
+        if (data.contactName.trim()) payload.contactName = sanitizeInput(data.contactName)
+        if (data.contactEmail.trim()) payload.contactEmail = data.contactEmail.trim()
+        if (data.notes.trim()) payload.anythingElse = sanitizeInput(data.notes)
+        await postJson('/api/make-a-website', payload)
+      }
+      setSubmitted(true)
+    } catch (error) {
+      setSubmitError(error.message || 'Unable to submit your request. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -124,7 +215,7 @@ export default function MakeAWebsite() {
             </p>
             <button
               onClick={goNext}
-              className="group mt-9 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95"
+              className="group mt-9 inline-flex cursor-pointer items-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95"
             >
               Start Now
               <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
@@ -135,6 +226,19 @@ export default function MakeAWebsite() {
           <div>
             <WizardProgress step={step} totalSteps={TOTAL_STEPS} />
             <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              {/* Honeypot — hidden from real visitors, catches bots */}
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="make-a-website-website_url_hp">Leave this field empty</label>
+                <input
+                  type="text"
+                  id="make-a-website-website_url_hp"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={data.website_url_hp}
+                  onChange={(e) => update('website_url_hp')(e.target.value)}
+                />
+              </div>
+
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.div
                   key={step}
@@ -195,8 +299,8 @@ export default function MakeAWebsite() {
                           label="Do you have a logo for the website?"
                           value={data.hasLogo}
                           onChange={update('hasLogo')}
-                          options={["No, I'd like you to design one", 'Yes, uploading now']}
-                          uploadValue="Yes, uploading now"
+                          options={["No, I'd like you to design one.", 'Yes, uploading now.']}
+                          uploadValue="Yes, uploading now."
                           fileValue={data.logoFile}
                           onFileChange={update('logoFile')}
                         />
@@ -204,8 +308,8 @@ export default function MakeAWebsite() {
                           label="Do you already have content for your website?"
                           value={data.hasContent}
                           onChange={update('hasContent')}
-                          options={["No, I'd like help writing it", 'Yes, uploading now']}
-                          uploadValue="Yes, uploading now"
+                          options={["No, I'd like help writing it.", 'Yes, uploading now.']}
+                          uploadValue="Yes, uploading now."
                           fileValue={data.contentFile}
                           onFileChange={update('contentFile')}
                         />
@@ -213,8 +317,8 @@ export default function MakeAWebsite() {
                           label="Do you have images to use on your website?"
                           value={data.hasImages}
                           onChange={update('hasImages')}
-                          options={['Generate/source them for me', 'Yes, uploading now']}
-                          uploadValue="Yes, uploading now"
+                          options={['Generate/source them for me.', 'Yes, uploading now.']}
+                          uploadValue="Yes, uploading now."
                           fileValue={data.imagesFile}
                           onFileChange={update('imagesFile')}
                         />
@@ -323,11 +427,18 @@ export default function MakeAWebsite() {
                 </motion.div>
               </AnimatePresence>
 
+              {submitError && step === TOTAL_STEPS && (
+                <div role="alert" className="mt-6 flex items-center gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+                  <AlertCircle size={17} className="shrink-0" />
+                  {submitError}
+                </div>
+              )}
+
               <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
                 {step > 1 ? (
                   <button
                     onClick={goBack}
-                    className="flex items-center gap-1.5 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-brand-400/40 hover:text-brand-600"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-brand-400/40 hover:text-brand-600"
                   >
                     <ArrowLeft size={15} /> Back
                   </button>
@@ -338,17 +449,18 @@ export default function MakeAWebsite() {
                   <button
                     onClick={goNext}
                     disabled={!isStepValid(step)}
-                    className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     Next <ArrowRight size={15} />
                   </button>
                 ) : (
                   <button
                     onClick={handleSubmit}
-                    disabled={!isStepValid(5)}
-                    className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={!isStepValid(5) || submitting}
+                    className="flex cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                   >
-                    <Rocket size={15} /> Submit
+                    {submitting ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />}
+                    {submitting ? 'Submitting…' : 'Submit'}
                   </button>
                 )}
               </div>

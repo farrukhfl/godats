@@ -27,6 +27,23 @@ export default function AiConsulting() {
         ctaLabel="Book a Consultation"
       />
 
+      <LeadForm
+        source="ai-consulting"
+        endpoint="/api/ai-consulting"
+        title="Get ready for expertly designed disruption — powered by AI."
+        subtitle="Tell us your AI needs. We'll handle the rest."
+        submitLabel="Book a Call"
+        closing="Eliminate guesswork from your AI implementation. Our experts are here to help."
+        fields={[
+          { name: 'name', label: 'Name', required: true },
+          { name: 'companyName', label: 'Company Name', required: true },
+          { name: 'businessEmail', label: 'Business Email', type: 'email', required: true },
+          { name: 'phone', label: 'Phone', type: 'tel', required: true },
+          { name: 'alternateContact', label: 'Alternate Contact', required: false },
+          { name: 'inquiry', label: 'Your Inquiry', type: 'textarea', required: false, full: true },
+        ]}
+      />
+
       <section className="mx-auto max-w-6xl px-6 py-20">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">
@@ -77,21 +94,6 @@ export default function AiConsulting() {
           ))}
         </StaggerGroup>
       </section>
-
-      <LeadForm
-        source="ai-consulting"
-        title="Get ready for expertly designed disruption — powered by AI."
-        subtitle="Tell us your AI needs. We'll handle the rest."
-        submitLabel="Book a Call"
-        closing="Eliminate guesswork from your AI implementation. Our experts are here to help."
-        fields={[
-          { name: 'name', label: 'Name', required: true },
-          { name: 'company', label: 'Company Name', required: true },
-          { name: 'email', label: 'Business Email', type: 'email', required: true },
-          { name: 'phone', label: 'Phone', type: 'tel', required: true },
-          { name: 'inquiry', label: 'Your Inquiry', type: 'textarea', required: true, full: true },
-        ]}
-      />
     </div>
   )
 }

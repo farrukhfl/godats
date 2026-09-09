@@ -21,6 +21,9 @@ public/godats images
 # Internal build-prompt files, not part of the app
 godats-*-prompt.md
 
+# Local API reference — contains seeded/default credentials, must never be committed
+api-docs.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

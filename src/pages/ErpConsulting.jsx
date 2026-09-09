@@ -21,6 +21,22 @@ export default function ErpConsulting() {
         ctaLabel="Get a Quote"
       />
 
+      <LeadForm
+        source="erp-consulting"
+        endpoint="/api/erp-consulting"
+        title="Ready to rethink ERP?"
+        subtitle="Get a successful ERP solution on your first try. Our experts are here to help."
+        submitLabel="Book Your Session"
+        closing="Simplify your decision-making. Make the right ERP choice with guidance you can trust."
+        fields={[
+          { name: 'name', label: 'Name', required: true },
+          { name: 'companyName', label: 'Company Name', required: true },
+          { name: 'positionTitle', label: 'Position / Title', required: true },
+          { name: 'email', label: 'Email', type: 'email', required: true },
+          { name: 'inquiry', label: 'Your Inquiry', type: 'textarea', required: false, full: true },
+        ]}
+      />
+
       <section className="mx-auto max-w-6xl px-6 py-20">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Custom ERP Solutions Rooted in Purpose</h2>
@@ -72,21 +88,6 @@ export default function ErpConsulting() {
           </Reveal>
         </div>
       </section>
-
-      <LeadForm
-        source="erp-consulting"
-        title="Ready to rethink ERP?"
-        subtitle="Get a successful ERP solution on your first try. Our experts are here to help."
-        submitLabel="Book Your Session"
-        closing="Simplify your decision-making. Make the right ERP choice with guidance you can trust."
-        fields={[
-          { name: 'name', label: 'Name', required: true },
-          { name: 'company', label: 'Company Name', required: true },
-          { name: 'position', label: 'Position / Title', required: true },
-          { name: 'email', label: 'Email', type: 'email', required: true },
-          { name: 'inquiry', label: 'Your Inquiry', type: 'textarea', required: true, full: true },
-        ]}
-      />
     </div>
   )
 }

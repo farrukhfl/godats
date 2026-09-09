@@ -92,7 +92,7 @@ export function RadioCards({ label, helper, required, value, onChange, options, 
               type="button"
               key={opt}
               onClick={() => onChange(opt)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
+              className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
                 active
                   ? 'border-brand-500 bg-brand-50 text-brand-700'
                   : 'border-slate-200 bg-white text-slate-700 hover:border-brand-400/40'
@@ -129,7 +129,7 @@ export function CheckboxGrid({ label, helper, value, onChange, options }) {
               type="button"
               key={opt}
               onClick={() => toggle(opt)}
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition sm:text-sm ${
+              className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition sm:text-sm ${
                 active
                   ? 'border-brand-500 bg-brand-50 text-brand-700'
                   : 'border-slate-200 bg-white text-slate-700 hover:border-brand-400/40'
@@ -163,7 +163,7 @@ export function FileChoice({ label, helper, options, value, onChange, fileValue,
               type="button"
               key={opt}
               onClick={() => onChange(opt)}
-              className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
+              className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-left text-sm font-medium transition ${
                 active
                   ? 'border-brand-500 bg-brand-50 text-brand-700'
                   : 'border-slate-200 bg-white text-slate-700 hover:border-brand-400/40'
@@ -184,11 +184,11 @@ export function FileChoice({ label, helper, options, value, onChange, fileValue,
       {showUpload && (
         <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500 transition hover:border-brand-400/50 hover:text-brand-600">
           <Upload size={16} />
-          {fileValue ? fileValue : 'Click to choose a file'}
+          {fileValue ? fileValue.name : 'Click to choose a file'}
           <input
             type="file"
             className="hidden"
-            onChange={(e) => onFileChange(e.target.files?.[0]?.name || '')}
+            onChange={(e) => onFileChange(e.target.files?.[0] || null)}
           />
         </label>
       )}
@@ -216,7 +216,7 @@ export function SwatchPicker({ label, helper, value, onChange, options }) {
               type="button"
               key={opt}
               onClick={() => onChange(opt)}
-              className={`overflow-hidden rounded-xl border-2 text-left transition ${
+              className={`cursor-pointer overflow-hidden rounded-xl border-2 text-left transition ${
                 active ? 'border-brand-500' : 'border-slate-200 hover:border-brand-400/40'
               }`}
             >
@@ -238,11 +238,11 @@ export function SwatchPicker({ label, helper, value, onChange, options }) {
 }
 
 const fontPreviews = [
-  { name: 'Modern Sans', style: { fontFamily: 'Inter, ui-sans-serif, sans-serif' } },
-  { name: 'Geometric Display', style: { fontFamily: 'Sora, ui-sans-serif, sans-serif', fontWeight: 700 } },
-  { name: 'Classic Serif', style: { fontFamily: 'Georgia, "Times New Roman", serif' } },
-  { name: 'Technical Mono', style: { fontFamily: 'ui-monospace, "SFMono-Regular", monospace' } },
-  { name: 'Bold Statement', style: { fontFamily: 'Sora, ui-sans-serif, sans-serif', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' } },
+  { name: 'Sans Modern', style: { fontFamily: 'Inter, ui-sans-serif, sans-serif' } },
+  { name: 'Elegant Display', style: { fontFamily: 'Sora, ui-sans-serif, sans-serif', fontWeight: 700 } },
+  { name: 'Serif Classic', style: { fontFamily: 'Georgia, "Times New Roman", serif' } },
+  { name: 'Friendly Rounded', style: { fontFamily: 'ui-rounded, "SF Pro Rounded", Inter, ui-sans-serif, sans-serif' } },
+  { name: 'Bold Condensed', style: { fontFamily: 'Sora, ui-sans-serif, sans-serif', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em' } },
 ]
 
 export function FontPicker({ label, helper, value, onChange }) {
@@ -256,7 +256,7 @@ export function FontPicker({ label, helper, value, onChange }) {
               type="button"
               key={f.name}
               onClick={() => onChange(f.name)}
-              className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3.5 text-left transition ${
+              className={`flex cursor-pointer items-center justify-between gap-4 rounded-xl border px-4 py-3.5 text-left transition ${
                 active ? 'border-brand-500 bg-brand-50' : 'border-slate-200 bg-white hover:border-brand-400/40'
               }`}
             >
@@ -286,7 +286,7 @@ export function CheckboxLine({ checked, onChange, children }) {
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className="flex w-full items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left text-sm text-slate-600 transition hover:border-brand-400/40"
+      className="flex w-full cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-left text-sm text-slate-600 transition hover:border-brand-400/40"
     >
       <span
         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-md border-2 ${

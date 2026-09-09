@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MessageCircle, Waves } from 'lucide-react'
+import { MessageCircle } from 'lucide-react'
 import { LinkedinIcon, InstagramIcon, FacebookIcon } from './SocialIcons'
 import { footerColumns, WHATSAPP_URL, LINKEDIN_URL, EMAIL_INFO, PHONE } from '../lib/nav'
 
@@ -9,11 +9,8 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-6 py-16">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-6">
           <div className="col-span-2">
-            <Link to="/" className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white">
-                <Waves size={20} strokeWidth={2.5} />
-              </span>
-              <span className="font-display text-xl font-bold text-slate-900">GoDats</span>
+            <Link to="/" className="flex items-center">
+              <img src="/godatslogo.png" alt="Dolphin Technologies" className="h-9 w-auto" />
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-slate-500">
               Complete solutions to launch and grow your business online.

@@ -5,16 +5,13 @@ import Reveal from '../components/Reveal'
 import LeadForm from '../components/LeadForm'
 import { getJobBySlug } from '../lib/jobs'
 
-// This form collects a resume file, which the JSON contact-inquiry API can't
-// accept — kept as a mock (console-log) submission until a real multipart
-// upload / ATS backend is wired up, same as the Careers "Get Hired" form.
 const applicationFields = [
-  { name: 'name', label: 'Full Name', required: true },
+  { name: 'fullName', label: 'Full Name', required: true },
   { name: 'email', label: 'Email', type: 'email', required: true },
   { name: 'phone', label: 'Phone', type: 'tel', required: true },
   { name: 'bio', label: 'Bio', type: 'textarea', required: true, full: true },
   { name: 'resume', label: 'Upload CV/Resume', type: 'file', accept: '.pdf,.doc,.docx', required: true, full: true },
-  { name: 'consent', label: 'By using this form you agree with the storage and handling of your data by this website.', type: 'checkbox', required: true, full: true },
+  { name: 'dataConsent', label: 'By using this form you agree with the storage and handling of your data by this website.', type: 'checkbox', required: true, full: true },
 ]
 
 export default function JobDetail() {
@@ -45,6 +42,14 @@ export default function JobDetail() {
           <span className="flex items-center gap-1.5"><MapPin size={15} /> {job.location.join(' / ')}</span>
         </Reveal>
       </section>
+
+      <LeadForm
+        source={`job-${job.slug}`}
+        endpoint={`/api/jobs/${job.slug}/apply`}
+        title={`Apply for this position — ${job.title}`}
+        submitLabel="Submit Application"
+        fields={applicationFields}
+      />
 
       <section className="mx-auto max-w-3xl px-6 pb-20">
         <Reveal className="mb-10">
@@ -85,14 +90,6 @@ export default function JobDetail() {
           </Reveal>
         )}
       </section>
-
-      <LeadForm
-        source={`job-${job.slug}`}
-        mockSubmit
-        title={`Apply for this position — ${job.title}`}
-        submitLabel="Submit Application"
-        fields={applicationFields}
-      />
     </div>
   )
 }

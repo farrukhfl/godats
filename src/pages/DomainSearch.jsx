@@ -79,7 +79,7 @@ function DomainSearchBox() {
         <button
           type="submit"
           disabled={status === 'loading'}
-          className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 disabled:opacity-70"
+          className="flex cursor-pointer items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand-400 to-brand-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-brand-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {status === 'loading' && <Loader2 size={16} className="animate-spin" />}
           {status === 'loading' ? 'Searching…' : 'Search Domain'}
@@ -126,6 +126,9 @@ function DomainSearchBox() {
                 )}
               </motion.div>
             ))}
+            <p className="px-1 pt-1 text-center text-xs text-slate-400">
+              Availability and pricing shown here are a preview — final availability and price are confirmed by our team before you check out.
+            </p>
           </motion.div>
         )}
       </AnimatePresence>

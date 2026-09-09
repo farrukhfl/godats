@@ -64,18 +64,14 @@ const faqs = [
   { q: 'How do I compete with established IT providers or internal teams?', a: "You don't compete on headcount — you compete on capability. You're offering a full-stack solution (AI, cybersecurity, fintech, infrastructure) without the overhead most providers carry. That's your edge." },
 ]
 
-// NOTE: the live site's scraped markup only exposed a consent checkbox + Submit
-// button for this form — the input fields above it weren't captured. This is a
-// best-guess reconstruction (name/company/email/phone/model/details) to confirm
-// with the backend team, unlike the fully-scraped Contact/ERP/AI forms.
 const partnerFields = [
-  { name: 'name', label: 'Full Name', required: true },
-  { name: 'company', label: 'Business / Company Name', required: true },
+  { name: 'firstName', label: 'First Name', required: true },
+  { name: 'lastName', label: 'Last Name', required: true },
   { name: 'email', label: 'Email', type: 'email', required: true },
-  { name: 'phone', label: 'Phone', type: 'tel' },
-  { name: 'model', label: 'Which partner model interests you?', type: 'select', options: partnerModels.map((m) => m.name), required: true },
-  { name: 'details', label: 'Tell us about your business and client base', type: 'textarea', required: true, full: true },
-  { name: 'consent', label: 'By checking this box and submitting the form, you agree to be contacted by Dolphin Advanced Technology Services using the information provided above regarding our products and services. For details on how we handle your personal data, please review our Privacy Policy.', type: 'checkbox', required: true, full: true },
+  { name: 'jobTitle', label: 'Job Title', required: true },
+  { name: 'phone', label: 'Phone', type: 'tel', required: true },
+  { name: 'streetAddress', label: 'Street Address', required: true, full: true },
+  { name: 'businessWebsite', label: 'Business Website', required: false, full: true },
 ]
 
 export default function PartnerProgram() {
@@ -89,6 +85,16 @@ export default function PartnerProgram() {
         subtitle="No income cap. Branded Solution. Dedicated Support. Unlock no-cap revenue streams when you resell our IT and fintech solutions. Enjoy up to 25% margin on every sale — with non-profit, education, and government orders bringing more."
         ctaLabel="Join Now"
         ctaTo="#partner-pro"
+      />
+
+      <LeadForm
+        id="partner-pro"
+        source="partner-program"
+        endpoint="/api/partner-program"
+        title="Ready to become a partner?"
+        subtitle="Tell us about your business and how you'd like to work with us."
+        submitLabel="Join Now"
+        fields={partnerFields}
       />
 
       {/* Pillars */}
@@ -208,7 +214,7 @@ export default function PartnerProgram() {
         <div className="mx-auto max-w-5xl px-6">
           <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Partner Models</h2>
-            <p className="mt-4 text-slate-500">Pick the model that fits how you work — you can tell us for certain in the form below.</p>
+            <p className="mt-4 text-slate-500">Pick the model that fits how you work — you can tell us for certain in the form above.</p>
           </Reveal>
           <StaggerGroup className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
             {partnerModels.map((m) => {
@@ -221,7 +227,7 @@ export default function PartnerProgram() {
                       setSelectedModel(m.name)
                       document.getElementById('partner-pro')?.scrollIntoView({ behavior: 'smooth' })
                     }}
-                    className={`flex h-full w-full flex-col rounded-2xl border-2 p-7 text-left transition ${
+                    className={`flex h-full w-full cursor-pointer flex-col rounded-2xl border-2 p-7 text-left transition ${
                       active ? 'border-brand-500 bg-white shadow-lg shadow-brand-500/10' : 'border-slate-200 bg-white hover:border-brand-400/40'
                     }`}
                   >
@@ -251,17 +257,6 @@ export default function PartnerProgram() {
           </p>
         </Reveal>
       </section>
-
-      <LeadForm
-        id="partner-pro"
-        source="partner-program"
-        key={selectedModel}
-        prefill={{ model: selectedModel }}
-        title="Ready to become a partner?"
-        subtitle="Tell us about your business and how you'd like to work with us."
-        submitLabel="Join Now"
-        fields={partnerFields}
-      />
 
       <FAQAccordion items={faqs} />
     </div>

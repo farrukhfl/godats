@@ -1,8 +1,17 @@
-const apiBaseUrl = (import.meta.env.VITE_DRMS_API_BASE_URL || 'https://dev-derps.gotmsolutions.com/api').replace(/\/$/, '')
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'https://dev.godats.com').replace(/\/$/, '')
 
-export async function postForm(path, payload) {
+async function parseResponse(response) {
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    const error = new Error(data.error || 'Unable to submit the form. Please try again.')
+    error.details = data.details || []
+    throw error
+  }
+  return data
+}
+
+export async function postJson(path, payload) {
   let response
-
   try {
     response = await fetch(`${apiBaseUrl}${path}`, {
       method: 'POST',
@@ -12,14 +21,15 @@ export async function postForm(path, payload) {
   } catch {
     throw new Error('Unable to connect to the server. Please try again shortly.')
   }
+  return parseResponse(response)
+}
 
-  const data = await response.json().catch(() => ({}))
-
-  if (!response.ok) {
-    const error = new Error(data.message || 'Unable to submit the form. Please try again.')
-    error.fieldErrors = data.errors || {}
-    throw error
+export async function postMultipart(path, formData) {
+  let response
+  try {
+    response = await fetch(`${apiBaseUrl}${path}`, { method: 'POST', body: formData })
+  } catch {
+    throw new Error('Unable to connect to the server. Please try again shortly.')
   }
-
-  return data
+  return parseResponse(response)
 }

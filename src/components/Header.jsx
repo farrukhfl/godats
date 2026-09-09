@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Phone, ChevronDown, Menu, X, ArrowUpRight, Waves } from 'lucide-react'
+import { Phone, ChevronDown, Menu, X, ArrowUpRight } from 'lucide-react'
 import { headerNav, PHONE, PHONE_TEL, DERPS_LOGIN_URL } from '../lib/nav'
 
 function DesktopDropdown({ item }) {
@@ -149,16 +149,15 @@ export default function Header() {
         className="border-b backdrop-blur-xl"
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link to="/" className="group flex items-center gap-2">
-            <motion.span
-              whileHover={{ scale: 1.08, rotate: -6 }}
-              whileTap={{ scale: 0.94 }}
+          <Link to="/" className="flex items-center">
+            <motion.img
+              src="/godatslogo.png"
+              alt="Dolphin Technologies"
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-              className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white"
-            >
-              <Waves size={20} strokeWidth={2.5} />
-            </motion.span>
-            <span className="font-display text-xl font-bold tracking-tight text-slate-900">GoDats</span>
+              className="h-9 w-auto sm:h-10"
+            />
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">

@@ -16,7 +16,7 @@ export default function Footer() {
               Complete solutions to launch and grow your business online.
             </p>
             <div className="mt-5 flex items-center gap-3">
-              <a href={LINKEDIN_URL} target="_blank" rel="noreferrer" aria-label="LinkedIn" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:-translate-y-1 hover:border-brand-400/50 hover:text-brand-500 hover:shadow-md hover:shadow-brand-500/10">
+              <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:-translate-y-1 hover:border-brand-400/50 hover:text-brand-500 hover:shadow-md hover:shadow-brand-500/10">
                 <LinkedinIcon size={16} />
               </a>
               <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:-translate-y-1 hover:border-brand-400/50 hover:text-brand-500 hover:shadow-md hover:shadow-brand-500/10">
@@ -25,7 +25,7 @@ export default function Footer() {
               <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:-translate-y-1 hover:border-brand-400/50 hover:text-brand-500 hover:shadow-md hover:shadow-brand-500/10">
                 <FacebookIcon size={16} />
               </a>
-              <a href={WHATSAPP_URL} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:-translate-y-1 hover:border-brand-400/50 hover:text-brand-500 hover:shadow-md hover:shadow-brand-500/10">
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:-translate-y-1 hover:border-brand-400/50 hover:text-brand-500 hover:shadow-md hover:shadow-brand-500/10">
                 <MessageCircle size={16} />
               </a>
             </div>

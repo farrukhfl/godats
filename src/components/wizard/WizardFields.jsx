@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Check, Upload } from 'lucide-react'
+import { maxLengthFor } from '../../lib/security'
 
 export function WizardProgress({ step, totalSteps }) {
   const percent = Math.round((step / totalSteps) * 100)
@@ -41,6 +42,7 @@ export function TextField({ label, helper, required, value, onChange, placeholde
     <FieldShell label={label} helper={helper} required={required}>
       <input
         type={type}
+        maxLength={maxLengthFor(type)}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
@@ -55,6 +57,7 @@ export function TextAreaField({ label, helper, required, value, onChange, placeh
     <FieldShell label={label} helper={helper} required={required}>
       <textarea
         rows={rows}
+        maxLength={maxLengthFor('textarea')}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

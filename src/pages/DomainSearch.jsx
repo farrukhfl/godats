@@ -73,6 +73,9 @@ function DomainSearchBox() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="yourbusiness"
+            maxLength={63}
+            autoComplete="off"
+            spellCheck={false}
             className="w-full rounded-full border border-slate-200 bg-slate-100 py-3.5 pl-11 pr-4 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-brand-400/50 focus:bg-white"
           />
         </div>

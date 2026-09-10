@@ -1,0 +1,8 @@
+# Marketing site — every page here is meant to be indexed. This file exists so
+# /robots.txt returns a real answer instead of the SPA's fallback HTML.
+User-agent: *
+Allow: /
+
+# The customer/reseller portal lives on a separate host behind a login, so
+# there is nothing for a crawler to follow there — its "Sign in" links carry
+# rel="nofollow" too.

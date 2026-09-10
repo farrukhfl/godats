@@ -45,3 +45,48 @@ export function checkRateLimit(actionKey = 'lead_form_submit', cooldownMs = 1000
     return { allowed: true, remainingSeconds: 0 }
   }
 }
+
+// Per-field length caps, keyed by the form field's input type. These are
+// mirrored onto the inputs as `maxLength` (so paste is clamped too) and
+// re-checked on submit, which keeps a bot from posting a megabyte-sized
+// "message" and stops obviously junk data before it reaches the API.
+// The API must enforce its own limits regardless.
+const MAX_LENGTHS = {
+  email: 150,
+  tel: 30,
+  textarea: 2000,
+  select: 120,
+  default: 120,
+}
+
+export function maxLengthFor(type) {
+  return MAX_LENGTHS[type] ?? MAX_LENGTHS.default
+}
+
+// Soft automation signals. Every one of these is spoofable, so this is only
+// ever used to *add friction* (a longer minimum dwell time before a
+// submission is accepted) — never as a hard gate, because a false positive
+// on a real visitor would silently lose us a lead.
+export function looksAutomated() {
+  try {
+    if (navigator.webdriver === true) return true
+    // Headless UA strings that don't bother hiding themselves.
+    if (/HeadlessChrome|PhantomJS|Puppeteer|Playwright|Electron\/|slimerjs/i.test(navigator.userAgent)) return true
+    // A real browser window always reports a non-zero outer size; most
+    // headless drivers report 0 unless explicitly configured.
+    if (window.outerWidth === 0 && window.outerHeight === 0) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
+// Minimum time a form must stay open before we accept a submission. Bumped
+// well past human-plausible when automation signals are present, so scripted
+// fills get rejected while a real visitor never notices the difference.
+const MIN_DWELL_MS = 1200
+const MIN_DWELL_MS_SUSPICIOUS = 4000
+
+export function dwellThreshold() {
+  return looksAutomated() ? MIN_DWELL_MS_SUSPICIOUS : MIN_DWELL_MS
+}

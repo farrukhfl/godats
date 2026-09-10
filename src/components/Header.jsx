@@ -194,7 +194,7 @@ export default function Header() {
             <a
               href={DERPS_LOGIN_URL}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer nofollow"
               className="flex items-center gap-1 text-sm font-medium text-slate-600 transition hover:text-brand-500"
             >
               Sign in <ArrowUpRight size={14} />
@@ -261,7 +261,7 @@ export default function Header() {
                 )
               )}
               <motion.div variants={mobileItemVariants} className="mt-4 flex flex-col gap-3">
-                <a href={DERPS_LOGIN_URL} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1 rounded-full border border-slate-300 py-2.5 text-sm font-medium text-slate-700">
+                <a href={DERPS_LOGIN_URL} target="_blank" rel="noopener noreferrer nofollow" className="flex items-center justify-center gap-1 rounded-full border border-slate-300 py-2.5 text-sm font-medium text-slate-700">
                   Sign in <ArrowUpRight size={14} />
                 </a>
                 <Link

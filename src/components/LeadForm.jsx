@@ -3,7 +3,33 @@ import { motion } from 'framer-motion'
 import { AlertCircle, CheckCircle2, Loader2, Upload, Check } from 'lucide-react'
 import Reveal from './Reveal'
 import { postJson, postMultipart } from '../lib/api'
-import { sanitizeInput, isValidEmail, checkRateLimit } from '../lib/security'
+import { sanitizeInput, isValidEmail, checkRateLimit, maxLengthFor, dwellThreshold } from '../lib/security'
+
+// Browser autofill hints, keyed by the schema field name. Correct tokens let a
+// real visitor's browser fill the form in one tap, and they keep the honeypot
+// (explicitly autoComplete="off") from ever being touched by autofill.
+const AUTOCOMPLETE = {
+  name: 'name',
+  fullName: 'name',
+  firstName: 'given-name',
+  lastName: 'family-name',
+  email: 'email',
+  businessEmail: 'email',
+  phone: 'tel',
+  alternateContact: 'tel',
+  companyName: 'organization',
+  jobTitle: 'organization-title',
+  positionTitle: 'organization-title',
+  streetAddress: 'street-address',
+  businessWebsite: 'url',
+}
+
+function autoCompleteFor(field) {
+  if (AUTOCOMPLETE[field.name]) return AUTOCOMPLETE[field.name]
+  if (field.type === 'email') return 'email'
+  if (field.type === 'tel') return 'tel'
+  return 'on'
+}
 
 function buildInitialValues(fields, prefill) {
   const initial = { website_url_hp: '' }
@@ -30,6 +56,11 @@ function validate(fields, values) {
     }
     if (field.type === 'email' && clean && !isValidEmail(clean)) {
       errors[field.name] = 'Please enter a valid email address.'
+      continue
+    }
+    const limit = maxLengthFor(field.type)
+    if (clean.length > limit) {
+      errors[field.name] = `${field.label} must be ${limit} characters or fewer.`
     }
   }
   return errors
@@ -113,8 +144,9 @@ export default function LeadForm({
       return
     }
 
-    // Automated scripts fill forms faster than any human can
-    if (formLoadTime.current && Date.now() - formLoadTime.current < 1200) {
+    // Automated scripts fill forms faster than any human can. The threshold
+    // stretches when the browser shows automation signals (see dwellThreshold).
+    if (formLoadTime.current && Date.now() - formLoadTime.current < dwellThreshold()) {
       setSubmitError('Please take your time filling out the form.')
       return
     }
@@ -274,6 +306,7 @@ export default function LeadForm({
                       <textarea
                         id={fieldId}
                         rows={4}
+                        maxLength={maxLengthFor('textarea')}
                         value={values[field.name]}
                         onChange={(e) => update(field.name, e.target.value)}
                         aria-invalid={hasError}
@@ -296,6 +329,8 @@ export default function LeadForm({
                       <input
                         id={fieldId}
                         type={field.type || 'text'}
+                        maxLength={maxLengthFor(field.type)}
+                        autoComplete={autoCompleteFor(field)}
                         value={values[field.name]}
                         onChange={(e) => update(field.name, e.target.value)}
                         aria-invalid={hasError}

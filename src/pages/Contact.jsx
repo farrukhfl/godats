@@ -8,7 +8,7 @@ import PageHero from '../components/PageHero'
 import Reveal, { StaggerGroup, StaggerItem } from '../components/Reveal'
 import { ADDRESS, PHONE, PHONE_TEL, EMAIL_INFO, EMAIL_SALES } from '../lib/nav'
 import { postJson } from '../lib/api'
-import { sanitizeInput, isValidEmail, checkRateLimit } from '../lib/security'
+import { sanitizeInput, isValidEmail, checkRateLimit, maxLengthFor, dwellThreshold } from '../lib/security'
 
 const talkPoints = [
   'Build a custom app that solves real business problems',
@@ -38,6 +38,16 @@ function validate(values) {
   if (!values.email.trim()) errors.email = 'Please enter your email address.'
   else if (!isValidEmail(values.email)) errors.email = 'Please enter a valid email address.'
   if (!sanitizeInput(values.message)) errors.message = 'Tell us a little about what you need.'
+
+  // Length caps mirror the maxLength on each input, so a pasted or scripted
+  // oversized payload is rejected here too rather than being sent on.
+  const limits = { name: 'default', phone: 'tel', email: 'email', company: 'default', message: 'textarea' }
+  for (const [field, kind] of Object.entries(limits)) {
+    const limit = maxLengthFor(kind)
+    if (!errors[field] && (values[field] || '').trim().length > limit) {
+      errors[field] = `Please keep this to ${limit} characters or fewer.`
+    }
+  }
   return errors
 }
 
@@ -64,7 +74,7 @@ function ContactForm() {
       setStatus('success')
       return
     }
-    if (formLoadTime.current && Date.now() - formLoadTime.current < 1200) {
+    if (formLoadTime.current && Date.now() - formLoadTime.current < dwellThreshold()) {
       setSubmitError('Please take your time filling out the form.')
       return
     }
@@ -149,26 +159,26 @@ function ContactForm() {
 
       <div>
         <label htmlFor="name" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Name</label>
-        <input id="name" value={values.name} onChange={(e) => update('name', e.target.value)} className={fieldClass('name')} />
+        <input id="name" autoComplete="name" maxLength={maxLengthFor('default')} value={values.name} onChange={(e) => update('name', e.target.value)} className={fieldClass('name')} />
         {errors.name && <p className="mt-1 text-xs font-medium text-rose-600">{errors.name}</p>}
       </div>
       <div>
         <label htmlFor="phone" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Contact Number</label>
-        <input id="phone" type="tel" value={values.phone} onChange={(e) => update('phone', e.target.value)} className={fieldClass('phone')} />
+        <input id="phone" type="tel" autoComplete="tel" maxLength={maxLengthFor('tel')} value={values.phone} onChange={(e) => update('phone', e.target.value)} className={fieldClass('phone')} />
         {errors.phone && <p className="mt-1 text-xs font-medium text-rose-600">{errors.phone}</p>}
       </div>
       <div>
         <label htmlFor="email" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Email Address</label>
-        <input id="email" type="email" value={values.email} onChange={(e) => update('email', e.target.value)} className={fieldClass('email')} />
+        <input id="email" type="email" autoComplete="email" maxLength={maxLengthFor('email')} value={values.email} onChange={(e) => update('email', e.target.value)} className={fieldClass('email')} />
         {errors.email && <p className="mt-1 text-xs font-medium text-rose-600">{errors.email}</p>}
       </div>
       <div>
         <label htmlFor="company" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Company Name</label>
-        <input id="company" value={values.company} onChange={(e) => update('company', e.target.value)} className={fieldClass('company')} />
+        <input id="company" autoComplete="organization" maxLength={maxLengthFor('default')} value={values.company} onChange={(e) => update('company', e.target.value)} className={fieldClass('company')} />
       </div>
       <div className="sm:col-span-2">
         <label htmlFor="message" className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500">Message</label>
-        <textarea id="message" rows={4} value={values.message} onChange={(e) => update('message', e.target.value)} className={fieldClass('message')} />
+        <textarea id="message" rows={4} maxLength={maxLengthFor('textarea')} value={values.message} onChange={(e) => update('message', e.target.value)} className={fieldClass('message')} />
         {errors.message && <p className="mt-1 text-xs font-medium text-rose-600">{errors.message}</p>}
       </div>
       <div className="sm:col-span-2">
